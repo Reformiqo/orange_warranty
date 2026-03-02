@@ -1,0 +1,9 @@
+{
+ "app_name": "orange_warranty",
+ "category": "",
+ "color": "#FF7846",
+ "icon": "octicon octicon-shield",
+ "label": "Orange Warranty",
+ "restrict_to_domain": "",
+ "type": "module"
+}

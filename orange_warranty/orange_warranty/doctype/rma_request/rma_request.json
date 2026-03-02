@@ -1,0 +1,601 @@
+{
+ "actions": [],
+ "allow_import": 0,
+ "allow_rename": 0,
+ "autoname": "RMA-.YYYY.-.#####",
+ "creation": "2025-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "source_section",
+  "warranty_registration",
+  "category",
+  "customer",
+  "customer_name",
+  "cb1",
+  "item_code",
+  "item_name",
+  "serial_number",
+  "part_code",
+  "part_description",
+  "spare_code_machine_nameplate",
+  "sb_fault",
+  "fault_description",
+  "warranty_check_section",
+  "warranty_type",
+  "warranty_end_date",
+  "is_under_warranty",
+  "replacement_section",
+  "replacement_source",
+  "old_serial_number",
+  "new_serial_number",
+  "status_section",
+  "rma_status",
+  "rejection_reason",
+  "cb_status",
+  "director_approval_required",
+  "director_approval_status",
+  "approved_by",
+  "cost_sharing_terms",
+  "financial_section",
+  "is_foc",
+  "replacement_cost",
+  "purchase_price",
+  "logistics_section",
+  "warehouse",
+  "collection_method",
+  "courier_tracking_number",
+  "cb_logistics",
+  "date_of_dispatch",
+  "date_of_inward",
+  "faulty_disposition_section",
+  "faulty_part_received",
+  "returnable_to_parent",
+  "cb_faulty",
+  "returned_to_parent_date",
+  "parent_return_tracking",
+  "manufacturer_section",
+  "sent_to_manufacturer_date",
+  "manufacturer_tracking_number",
+  "cb_mfg",
+  "manufacturer_action",
+  "manufacturer_response_date",
+  "replenishment_received",
+  "replenishment_date",
+  "parent_claim_section",
+  "parent_claim_date",
+  "parent_claim_status",
+  "cb_parent_claim",
+  "parent_response_date",
+  "parent_reference_number",
+  "parent_claim_remarks",
+  "linked_docs_section",
+  "foc_delivery_note",
+  "inward_stock_entry",
+  "sent_to_manufacturer_se",
+  "cb_linked",
+  "replenishment_pr",
+  "debit_note",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "fieldname": "warranty_registration",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Warranty Registration",
+   "options": "Warranty Registration",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "warranty_registration.category",
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "Head\nSpare\nMachine",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "warranty_registration.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "warranty_registration.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "warranty_registration.item_code",
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "warranty_registration.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "warranty_registration.serial_number",
+   "fieldname": "serial_number",
+   "fieldtype": "Data",
+   "label": "Serial Number",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "warranty_registration.part_code",
+   "fieldname": "part_code",
+   "fieldtype": "Data",
+   "label": "Part Code",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "warranty_registration.part_description",
+   "fieldname": "part_description",
+   "fieldtype": "Small Text",
+   "label": "Part Description",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "warranty_registration.spare_code_machine_nameplate",
+   "fieldname": "spare_code_machine_nameplate",
+   "fieldtype": "Data",
+   "label": "Spare/Machine Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_fault",
+   "fieldtype": "Section Break",
+   "label": "Fault Details"
+  },
+  {
+   "fieldname": "fault_description",
+   "fieldtype": "Small Text",
+   "label": "Fault Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warranty_check_section",
+   "fieldtype": "Section Break",
+   "label": "Warranty Check"
+  },
+  {
+   "fetch_from": "warranty_registration.warranty_type",
+   "fieldname": "warranty_type",
+   "fieldtype": "Select",
+   "label": "Warranty Type",
+   "options": "Parent Company (Hanglory)\nOrange Warranty",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "warranty_registration.warranty_end_date",
+   "fieldname": "warranty_end_date",
+   "fieldtype": "Date",
+   "label": "Warranty End Date",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_under_warranty",
+   "fieldtype": "Check",
+   "label": "Is Under Warranty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "replacement_section",
+   "fieldtype": "Section Break",
+   "label": "Replacement & Serial Swap"
+  },
+  {
+   "default": "Own Stock",
+   "fieldname": "replacement_source",
+   "fieldtype": "Select",
+   "label": "Replacement Source",
+   "options": "Own Stock\nParent Company Direct",
+   "reqd": 1
+  },
+  {
+   "fieldname": "old_serial_number",
+   "fieldtype": "Data",
+   "label": "Old Serial Number",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "new_serial_number",
+   "fieldtype": "Link",
+   "label": "New Serial Number",
+   "options": "Serial No"
+  },
+  {
+   "fieldname": "status_section",
+   "fieldtype": "Section Break",
+   "label": "Status & Approval"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "rma_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "RMA Status",
+   "options": "Pending\nApproved\nRejected\nReplacement Dispatched\nFaulty Received\nReturned to Parent\nDiscarded\nClosed",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.rma_status=='Rejected'",
+   "fieldname": "rejection_reason",
+   "fieldtype": "Small Text",
+   "label": "Rejection Reason",
+   "mandatory_depends_on": "eval:doc.rma_status=='Rejected'"
+  },
+  {
+   "fieldname": "cb_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "director_approval_required",
+   "fieldtype": "Check",
+   "label": "Director Approval Required",
+   "read_only": 1
+  },
+  {
+   "default": "Not Required",
+   "depends_on": "eval:doc.director_approval_required==1",
+   "fieldname": "director_approval_status",
+   "fieldtype": "Select",
+   "label": "Director Approval Status",
+   "options": "Not Required\nPending\nApproved\nRejected"
+  },
+  {
+   "depends_on": "eval:doc.director_approval_required==1",
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_under_warranty==0",
+   "fieldname": "cost_sharing_terms",
+   "fieldtype": "Small Text",
+   "label": "Cost-Sharing Terms"
+  },
+  {
+   "fieldname": "financial_section",
+   "fieldtype": "Section Break",
+   "label": "Financial"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_foc",
+   "fieldtype": "Check",
+   "label": "Is FOC",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.warranty_type=='Orange Warranty'&&doc.is_under_warranty==0",
+   "fieldname": "replacement_cost",
+   "fieldtype": "Currency",
+   "label": "Replacement Cost",
+   "non_negative": 1
+  },
+  {
+   "fetch_from": "warranty_registration.purchase_price",
+   "fieldname": "purchase_price",
+   "fieldtype": "Currency",
+   "label": "Purchase Price",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "logistics_section",
+   "fieldtype": "Section Break",
+   "label": "Logistics"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "warranty_registration.warehouse",
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "collection_method",
+   "fieldtype": "Select",
+   "label": "Collection Method",
+   "options": "\nLocal Pickup (Surat)\nCourier"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.collection_method=='Courier'",
+   "fieldname": "courier_tracking_number",
+   "fieldtype": "Data",
+   "label": "Courier/Tracking"
+  },
+  {
+   "fieldname": "cb_logistics",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "date_of_dispatch",
+   "fieldtype": "Date",
+   "label": "Date of Dispatch",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "date_of_inward",
+   "fieldtype": "Date",
+   "label": "Date of Inward"
+  },
+  {
+   "fieldname": "faulty_disposition_section",
+   "fieldtype": "Section Break",
+   "label": "Faulty Part Disposition"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "faulty_part_received",
+   "fieldtype": "Check",
+   "label": "Faulty Part Received"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.faulty_part_received==1",
+   "fieldname": "returnable_to_parent",
+   "fieldtype": "Select",
+   "label": "Returnable to Parent",
+   "options": "\nYes\nNo - Discard"
+  },
+  {
+   "fieldname": "cb_faulty",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.returnable_to_parent=='Yes'",
+   "fieldname": "returned_to_parent_date",
+   "fieldtype": "Date",
+   "label": "Returned to Parent Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.returnable_to_parent=='Yes'",
+   "fieldname": "parent_return_tracking",
+   "fieldtype": "Data",
+   "label": "Parent Return Tracking"
+  },
+  {
+   "depends_on": "eval:doc.replacement_source=='Own Stock'",
+   "fieldname": "manufacturer_section",
+   "fieldtype": "Section Break",
+   "label": "Manufacturer Replenishment"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sent_to_manufacturer_date",
+   "fieldtype": "Date",
+   "label": "Sent to Mfg Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "manufacturer_tracking_number",
+   "fieldtype": "Data",
+   "label": "Mfg Tracking"
+  },
+  {
+   "fieldname": "cb_mfg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "manufacturer_action",
+   "fieldtype": "Select",
+   "label": "Mfg Action",
+   "options": "\nPending\nRepair\nReplace\nRejected"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.manufacturer_action&&doc.manufacturer_action!='Pending'",
+   "fieldname": "manufacturer_response_date",
+   "fieldtype": "Date",
+   "label": "Mfg Response Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "replenishment_received",
+   "fieldtype": "Check",
+   "label": "Replenishment Received"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.replenishment_received==1",
+   "fieldname": "replenishment_date",
+   "fieldtype": "Date",
+   "label": "Replenishment Date"
+  },
+  {
+   "depends_on": "eval:doc.warranty_type=='Parent Company (Hanglory)'",
+   "fieldname": "parent_claim_section",
+   "fieldtype": "Section Break",
+   "label": "Parent Company Claim"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "parent_claim_date",
+   "fieldtype": "Date",
+   "label": "Claim Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Not Raised",
+   "fieldname": "parent_claim_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Claim Status",
+   "options": "Not Raised\nPending\nAcknowledged\nApproved\nRejected\nReplacement Received"
+  },
+  {
+   "fieldname": "cb_parent_claim",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.parent_claim_status!='Not Raised'&&doc.parent_claim_status!='Pending'",
+   "fieldname": "parent_response_date",
+   "fieldtype": "Date",
+   "label": "Parent Response Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.parent_claim_status!='Not Raised'",
+   "fieldname": "parent_reference_number",
+   "fieldtype": "Data",
+   "label": "Parent Reference Number"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "parent_claim_remarks",
+   "fieldtype": "Small Text",
+   "label": "Claim Remarks"
+  },
+  {
+   "fieldname": "linked_docs_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "foc_delivery_note",
+   "fieldtype": "Link",
+   "label": "FOC Delivery Note",
+   "options": "Delivery Note",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "inward_stock_entry",
+   "fieldtype": "Link",
+   "label": "Inward Stock Entry",
+   "options": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.replacement_source=='Own Stock'",
+   "fieldname": "sent_to_manufacturer_se",
+   "fieldtype": "Link",
+   "label": "Sent to Mfg SE",
+   "options": "Stock Entry"
+  },
+  {
+   "fieldname": "cb_linked",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.replacement_source=='Own Stock'",
+   "fieldname": "replenishment_pr",
+   "fieldtype": "Link",
+   "label": "Replenishment PR",
+   "options": "Purchase Receipt"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.is_under_warranty==0",
+   "fieldname": "debit_note",
+   "fieldtype": "Link",
+   "label": "Debit Note",
+   "options": "Sales Invoice"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Orange Warranty",
+ "name": "RMA Request",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Sales User",
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "read": 1,
+   "role": "RMA Manager",
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Stock User",
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "read": 1,
+   "role": "RMA Director",
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "read": 1,
+   "role": "System Manager",
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

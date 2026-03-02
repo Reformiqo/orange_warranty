@@ -1,0 +1,278 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 0,
+ "autoname": "format:WR-{category}-{####}",
+ "creation": "2025-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "product_details_section",
+  "category",
+  "item_code",
+  "item_name",
+  "serial_number",
+  "head_number",
+  "part_code",
+  "part_description",
+  "spare_code_machine_nameplate",
+  "quantity",
+  "customer_details_section",
+  "customer",
+  "customer_name",
+  "warranty_details_section",
+  "warranty_start_date",
+  "warranty_end_date",
+  "remaining_warranty_days",
+  "cb_warranty",
+  "warranty_type",
+  "warranty_status",
+  "purchase_location_section",
+  "purchase_price",
+  "purchase_date",
+  "cb_purchase",
+  "related_deal_type",
+  "related_deal",
+  "sb_location",
+  "warehouse",
+  "damage_status",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "product_details_section",
+   "fieldtype": "Section Break",
+   "label": "Product Details"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "Head\nSpare\nMachine",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "serial_number",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Serial Number",
+   "options": "Serial No"
+  },
+  {
+   "depends_on": "eval:doc.category=='Head'",
+   "fieldname": "head_number",
+   "fieldtype": "Data",
+   "label": "Head Number"
+  },
+  {
+   "fieldname": "part_code",
+   "fieldtype": "Data",
+   "label": "Part Code"
+  },
+  {
+   "fieldname": "part_description",
+   "fieldtype": "Small Text",
+   "label": "Part Description"
+  },
+  {
+   "depends_on": "eval:doc.category=='Spare'||doc.category=='Machine'",
+   "fieldname": "spare_code_machine_nameplate",
+   "fieldtype": "Data",
+   "label": "Spare/Machine Code"
+  },
+  {
+   "default": "1",
+   "fieldname": "quantity",
+   "fieldtype": "Int",
+   "label": "Quantity",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Details"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "warranty_details_section",
+   "fieldtype": "Section Break",
+   "label": "Warranty Details"
+  },
+  {
+   "fieldname": "warranty_start_date",
+   "fieldtype": "Date",
+   "label": "Warranty Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warranty_end_date",
+   "fieldtype": "Date",
+   "label": "Warranty End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "remaining_warranty_days",
+   "fieldtype": "Int",
+   "label": "Remaining Warranty Days",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_warranty",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warranty_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Warranty Type",
+   "options": "Parent Company (Hanglory)\nOrange Warranty",
+   "reqd": 1
+  },
+  {
+   "default": "Active",
+   "fieldname": "warranty_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Warranty Status",
+   "options": "Active\nExpired",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purchase_location_section",
+   "fieldtype": "Section Break",
+   "label": "Purchase & Location"
+  },
+  {
+   "fieldname": "purchase_price",
+   "fieldtype": "Currency",
+   "label": "Purchase Price",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "purchase_date",
+   "fieldtype": "Date",
+   "label": "Purchase Date"
+  },
+  {
+   "fieldname": "cb_purchase",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "related_deal_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Related Deal Type",
+   "options": "\nCRM Deal\nOpportunity"
+  },
+  {
+   "fieldname": "related_deal",
+   "fieldtype": "Dynamic Link",
+   "label": "Related Deal",
+   "options": "related_deal_type"
+  },
+  {
+   "fieldname": "sb_location",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
+   "default": "No",
+   "fieldname": "damage_status",
+   "fieldtype": "Select",
+   "label": "Damage Status",
+   "options": "\nNo\nYes"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "is_submittable": 0,
+ "links": [],
+ "modified": "2025-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Orange Warranty",
+ "name": "Warranty Registration",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Sales User",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "RMA Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Stock User"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "RMA Director",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
