@@ -1,7 +1,7 @@
 app_name = "orange_warranty"
 app_title = "Orange Warranty"
 app_publisher = "erpera"
-app_description = "orange_warranty"
+app_description = "orange warranty"
 app_email = "info@erpera.io"
 app_license = "mit"
 

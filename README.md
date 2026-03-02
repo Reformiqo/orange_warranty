@@ -1,6 +1,6 @@
 ### Orange Warranty
 
-orange_warranty
+orange warranty
 
 ### Installation
 

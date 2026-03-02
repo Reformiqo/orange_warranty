@@ -3,7 +3,7 @@ name = "orange_warranty"
 authors = [
     { name = "erpera", email = "info@erpera.io"}
 ]
-description = "orange_warranty"
+description = "orange warranty"
 requires-python = ">=3.14"
 readme = "README.md"
 dynamic = ["version"]
