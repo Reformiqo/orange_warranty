@@ -5,6 +5,10 @@ app_description = "Product Warranty and RMA Management"
 app_email = "info@erpera.io"
 app_license = "mit"
 
+doctype_js = {
+	"Sales Order": "public/js/sales_order.js"
+}
+
 doc_events = {
 	"Delivery Note": {
 		"validate": "orange_warranty.events.delivery_note.validate_foc"

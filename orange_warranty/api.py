@@ -1,6 +1,8 @@
+import json
+
 import frappe
 from frappe import _
-from frappe.utils import nowdate, getdate
+from frappe.utils import nowdate, getdate, flt, add_days
 
 
 @frappe.whitelist()
@@ -72,3 +74,88 @@ def close_rma(rma_name):
 	rma.rma_status = "Closed"
 	rma.flags.ignore_validate_update_after_submit = True
 	rma.save(ignore_permissions=True)
+
+
+@frappe.whitelist()
+def get_credit_summary(customer, companies):
+	"""Get credit summary data for a customer across selected companies."""
+	if isinstance(companies, str):
+		companies = json.loads(companies)
+
+	if not companies:
+		return {
+			"outstanding_amount": 0,
+			"overdue_30_days": 0,
+			"credit_limit": 0,
+			"payment_terms": "",
+		}
+
+	total_outstanding = 0
+	total_overdue_30 = 0
+	total_credit_limit = 0
+	payment_terms_list = []
+
+	for company in companies:
+		# Outstanding amount from GL Entry
+		outstanding = frappe.db.sql(
+			"""
+			SELECT IFNULL(SUM(debit) - SUM(credit), 0)
+			FROM `tabGL Entry`
+			WHERE party_type = 'Customer'
+			AND party = %s
+			AND company = %s
+			AND is_cancelled = 0
+			""",
+			(customer, company),
+		)
+		total_outstanding += flt(outstanding[0][0]) if outstanding else 0
+
+		# Overdue 0-30 days: sum outstanding per voucher where due_date is
+		# within the last 30 days (overdue but not older than 30 days)
+		today = nowdate()
+		overdue_30 = frappe.db.sql(
+			"""
+			SELECT IFNULL(SUM(outstanding), 0) FROM (
+				SELECT
+					ple.against_voucher_no,
+					SUM(ple.amount) as outstanding
+				FROM `tabPayment Ledger Entry` ple
+				WHERE ple.party_type = 'Customer'
+				AND ple.party = %s
+				AND ple.company = %s
+				AND ple.delinked = 0
+				GROUP BY ple.against_voucher_no
+				HAVING outstanding > 0
+				AND MIN(ple.due_date) < %s
+				AND MIN(ple.due_date) >= %s
+			) t
+			""",
+			(customer, company, today, add_days(today, -30)),
+		)
+		total_overdue_30 += flt(overdue_30[0][0]) if overdue_30 else 0
+
+		# Credit limit from Customer Credit Limit child table
+		credit_limit = frappe.db.get_value(
+			"Customer Credit Limit",
+			{"parent": customer, "parenttype": "Customer", "company": company},
+			"credit_limit",
+		)
+		total_credit_limit += flt(credit_limit)
+
+		# Payment terms from Customer
+		payment_terms = frappe.db.get_value("Customer", customer, "payment_terms")
+		if payment_terms and payment_terms not in payment_terms_list:
+			payment_terms_list.append(payment_terms)
+
+	return {
+		"outstanding_amount": total_outstanding,
+		"overdue_30_days": total_overdue_30,
+		"credit_limit": total_credit_limit,
+		"payment_terms": ", ".join(payment_terms_list),
+	}
+
+
+@frappe.whitelist()
+def get_company_list():
+	"""Get list of companies the user has access to."""
+	return frappe.get_all("Company", pluck="name", order_by="name")
