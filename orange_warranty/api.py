@@ -9,6 +9,7 @@ from frappe.utils import nowdate, getdate, flt, add_days
 def set_replacement_serial(rma_name, new_serial_number):
 	"""Set replacement serial. Validates item match and uniqueness."""
 	rma = frappe.get_doc("RMA Request", rma_name)
+	rma.check_permission("write")
 
 	if not frappe.db.exists("Serial No", new_serial_number):
 		frappe.throw(_("Serial No {0} does not exist.").format(new_serial_number))
@@ -24,15 +25,25 @@ def set_replacement_serial(rma_name, new_serial_number):
 			)
 		)
 
+	# Validate serial is in stock (active)
+	sn_status = frappe.db.get_value("Serial No", new_serial_number, "status")
+	if sn_status != "Active":
+		frappe.throw(
+			_("Serial {0} is not Active (current status: {1}).").format(
+				new_serial_number, sn_status
+			)
+		)
+
 	rma.new_serial_number = new_serial_number
 	rma.flags.ignore_validate_update_after_submit = True
-	rma.save(ignore_permissions=True)
+	rma.save()
 
 
 @frappe.whitelist()
 def mark_faulty_received(rma_name, date_of_inward, returnable_to_parent):
 	"""Mark faulty received. Triggers auto inward Stock Entry."""
 	rma = frappe.get_doc("RMA Request", rma_name)
+	rma.check_permission("write")
 
 	if getdate(date_of_inward) > getdate(nowdate()):
 		frappe.throw(_("Inward date cannot be in the future."))
@@ -44,13 +55,14 @@ def mark_faulty_received(rma_name, date_of_inward, returnable_to_parent):
 	rma.faulty_part_received = 1
 	rma.returnable_to_parent = returnable_to_parent
 	rma.flags.ignore_validate_update_after_submit = True
-	rma.save(ignore_permissions=True)
+	rma.save()
 
 
 @frappe.whitelist()
 def mark_returned_to_parent(rma_name, returned_date, tracking=None):
 	"""Mark faulty part returned to manufacturer."""
 	rma = frappe.get_doc("RMA Request", rma_name)
+	rma.check_permission("write")
 
 	if getdate(returned_date) > getdate(nowdate()):
 		frappe.throw(_("Return date cannot be in the future."))
@@ -58,13 +70,14 @@ def mark_returned_to_parent(rma_name, returned_date, tracking=None):
 	rma.returned_to_parent_date = returned_date
 	rma.parent_return_tracking = tracking or ""
 	rma.flags.ignore_validate_update_after_submit = True
-	rma.save(ignore_permissions=True)
+	rma.save()
 
 
 @frappe.whitelist()
 def close_rma(rma_name):
 	"""Close RMA. Triggers serial swap on Warranty Registration."""
 	rma = frappe.get_doc("RMA Request", rma_name)
+	rma.check_permission("write")
 
 	if rma.rma_status not in ("Faulty Received", "Returned to Parent", "Discarded"):
 		frappe.throw(
@@ -73,7 +86,7 @@ def close_rma(rma_name):
 
 	rma.rma_status = "Closed"
 	rma.flags.ignore_validate_update_after_submit = True
-	rma.save(ignore_permissions=True)
+	rma.save()
 
 
 @frappe.whitelist()
