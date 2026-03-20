@@ -28,6 +28,8 @@ def recalculate_emi(doctype, docname, num_emis, start_date, day_of_month, cascad
 	doc = frappe.get_doc(doctype, docname)
 	doc.check_permission("write")
 
+	_validate_before_recalculation(doc)
+
 	result = _apply_emi_schedule(doc, num_emis, start_date, day_of_month)
 
 	cascaded_invoices = []
@@ -48,6 +50,46 @@ def recalculate_emi(doctype, docname, num_emis, start_date, day_of_month, cascad
 		"skipped_invoices": skipped_invoices,
 		"total_rows": result["total_rows"],
 	}
+
+
+def _validate_before_recalculation(doc):
+	"""Run pre-flight checks before allowing recalculation."""
+	# Guard against untagged rows being silently replaced
+	untagged = [
+		row for row in doc.payment_schedule
+		if not row.custom_payment_type
+	]
+	if untagged:
+		frappe.throw(
+			_("Found {0} untagged payment schedule row(s) (missing Payment Type). "
+			  "Please tag each row as Advance, Delivery, or EMI before recalculating.").format(
+				len(untagged)
+			)
+		)
+
+	# Check for Payment Entry references on EMI rows that would be orphaned
+	emi_row_names = [
+		row.name for row in doc.payment_schedule
+		if row.custom_payment_type not in PROTECTED_TYPES
+	]
+	if emi_row_names:
+		pe_refs = frappe.get_all(
+			"Payment Entry Reference",
+			filters={
+				"reference_doctype": doc.doctype,
+				"reference_name": doc.name,
+				"payment_schedule_row": ["in", emi_row_names],
+				"docstatus": ["!=", 2],
+			},
+			fields=["parent"],
+			limit=5,
+		)
+		if pe_refs:
+			pe_names = ", ".join(set(r.parent for r in pe_refs))
+			frappe.throw(
+				_("Cannot recalculate: Payment Entry references exist on EMI rows ({0}). "
+				  "Cancel or unlink the Payment Entries first.").format(pe_names)
+			)
 
 
 def _apply_emi_schedule(doc, num_emis, start_date, day_of_month):
@@ -152,7 +194,11 @@ def _generate_emi_dates(start_date, num_emis, day_of_month):
 
 
 def _cascade_to_purchase_invoices(po_name, num_emis, start_date, day_of_month):
-	"""Apply the same EMI schedule to all linked Purchase Invoices."""
+	"""Apply the same EMI schedule to all linked Purchase Invoices.
+
+	Uses a two-pass approach: first validates all PIs, then applies changes.
+	This prevents partial updates if one PI fails validation.
+	"""
 	# Find linked PIs (not cancelled)
 	pi_items = frappe.get_all(
 		"Purchase Invoice Item",
@@ -161,24 +207,59 @@ def _cascade_to_purchase_invoices(po_name, num_emis, start_date, day_of_month):
 	)
 
 	pi_names = [row.name for row in pi_items]
-	cascaded = []
 	skipped = []
+	valid_docs = []
 
+	# Pass 1: Validate all PIs before making any changes
 	for pi_name in pi_names:
 		pi_doc = frappe.get_doc("Purchase Invoice", pi_name)
 
-		# Check if any non-protected row has payments
-		has_paid_emi = False
-		for row in pi_doc.payment_schedule:
-			if row.custom_payment_type not in PROTECTED_TYPES and flt(row.paid_amount) > 0:
-				has_paid_emi = True
-				break
-
-		if has_paid_emi:
-			skipped.append(pi_name)
+		# Check write permission
+		if not pi_doc.has_permission("write"):
+			skipped.append("{0} (no write permission)".format(pi_name))
 			continue
 
+		# Check for untagged rows
+		has_untagged = any(not row.custom_payment_type for row in pi_doc.payment_schedule)
+		if has_untagged:
+			skipped.append("{0} (has untagged rows)".format(pi_name))
+			continue
+
+		# Check if any non-protected row has payments
+		has_paid_emi = any(
+			row.custom_payment_type not in PROTECTED_TYPES and flt(row.paid_amount) > 0
+			for row in pi_doc.payment_schedule
+		)
+		if has_paid_emi:
+			skipped.append("{0} (has paid EMI rows)".format(pi_name))
+			continue
+
+		# Check for Payment Entry references on EMI rows
+		emi_row_names = [
+			row.name for row in pi_doc.payment_schedule
+			if row.custom_payment_type not in PROTECTED_TYPES
+		]
+		if emi_row_names:
+			pe_refs = frappe.get_all(
+				"Payment Entry Reference",
+				filters={
+					"reference_doctype": "Purchase Invoice",
+					"reference_name": pi_name,
+					"payment_schedule_row": ["in", emi_row_names],
+					"docstatus": ["!=", 2],
+				},
+				limit=1,
+			)
+			if pe_refs:
+				skipped.append("{0} (has Payment Entry references)".format(pi_name))
+				continue
+
+		valid_docs.append(pi_doc)
+
+	# Pass 2: Apply changes only to validated PIs
+	cascaded = []
+	for pi_doc in valid_docs:
 		_apply_emi_schedule(pi_doc, num_emis, start_date, day_of_month)
-		cascaded.append(pi_name)
+		cascaded.append(pi_doc.name)
 
 	return cascaded, skipped

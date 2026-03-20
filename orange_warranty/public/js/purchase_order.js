@@ -46,6 +46,13 @@ function show_emi_dialog_po(frm) {
 
 	let outstanding = flt(grand_total - protected_amount, 2);
 
+	if (outstanding <= 0) {
+		frappe.msgprint(
+			__("No outstanding amount to split into EMIs. Advance + Delivery covers the full Grand Total.")
+		);
+		return;
+	}
+
 	let d = new frappe.ui.Dialog({
 		title: __("Recalculate EMI"),
 		fields: [
@@ -142,10 +149,23 @@ function show_emi_dialog_po(frm) {
 					}
 					if (r.skipped_invoices && r.skipped_invoices.length) {
 						frappe.msgprint(
-							__("Skipped {0} Purchase Invoice(s) with paid EMI rows: {1}", [
+							__("Skipped {0} Purchase Invoice(s): {1}", [
 								r.skipped_invoices.length,
 								r.skipped_invoices.join(", "),
 							])
+						);
+					}
+					if (
+						values.cascade_to_pi &&
+						!(r.cascaded_invoices && r.cascaded_invoices.length) &&
+						!(r.skipped_invoices && r.skipped_invoices.length)
+					) {
+						frappe.show_alert(
+							{
+								message: __("No linked Purchase Invoices found to update."),
+								indicator: "orange",
+							},
+							5
 						);
 					}
 					frm.reload_doc();

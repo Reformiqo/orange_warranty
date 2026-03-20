@@ -46,6 +46,13 @@ function show_emi_dialog_pi(frm) {
 
 	let outstanding = flt(grand_total - protected_amount, 2);
 
+	if (outstanding <= 0) {
+		frappe.msgprint(
+			__("No outstanding amount to split into EMIs. Advance + Delivery covers the full Grand Total.")
+		);
+		return;
+	}
+
 	let d = new frappe.ui.Dialog({
 		title: __("Recalculate EMI"),
 		fields: [
