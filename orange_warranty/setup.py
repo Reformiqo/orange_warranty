@@ -101,6 +101,17 @@ def create_custom_fields():
 				"module": "Orange Warranty",
 			},
 		],
+		"Payment Schedule": [
+			{
+				"fieldname": "custom_payment_type",
+				"fieldtype": "Select",
+				"label": "Payment Type",
+				"options": "\nAdvance\nDelivery\nEMI",
+				"insert_after": "description",
+				"in_list_view": 1,
+				"module": "Orange Warranty",
+			},
+		],
 	}
 
 	create_custom_fields(custom_fields, update=True)

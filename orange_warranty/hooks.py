@@ -6,7 +6,9 @@ app_email = "info@erpera.io"
 app_license = "mit"
 
 doctype_js = {
-	"Sales Order": "public/js/sales_order.js"
+	"Sales Order": "public/js/sales_order.js",
+	"Purchase Order": "public/js/purchase_order.js",
+	"Purchase Invoice": "public/js/purchase_invoice.js",
 }
 
 doc_events = {
