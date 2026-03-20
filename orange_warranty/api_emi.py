@@ -7,6 +7,11 @@ ALLOWED_DOCTYPES = ("Purchase Order", "Purchase Invoice")
 PROTECTED_TYPES = ("Advance", "Delivery")
 
 
+def _get_payment_type(row):
+	"""Safely get custom_payment_type, returns None if field doesn't exist yet."""
+	return getattr(row, "custom_payment_type", None) or None
+
+
 @frappe.whitelist()
 def recalculate_emi(doctype, docname, num_emis, start_date, day_of_month, cascade_to_pi=0):
 	"""Recalculate EMI rows in the payment schedule of a Purchase Order or Purchase Invoice.
@@ -57,7 +62,7 @@ def _validate_before_recalculation(doc):
 	# Guard against untagged rows being silently replaced
 	untagged = [
 		row for row in doc.payment_schedule
-		if not row.custom_payment_type
+		if not _get_payment_type(row)
 	]
 	if untagged:
 		frappe.throw(
@@ -70,7 +75,7 @@ def _validate_before_recalculation(doc):
 	# Check for Payment Entry references on EMI rows that would be orphaned
 	emi_row_names = [
 		row.name for row in doc.payment_schedule
-		if row.custom_payment_type not in PROTECTED_TYPES
+		if _get_payment_type(row) not in PROTECTED_TYPES
 	]
 	if emi_row_names:
 		pe_refs = frappe.get_all(
@@ -98,7 +103,7 @@ def _apply_emi_schedule(doc, num_emis, start_date, day_of_month):
 	emi_rows = []
 
 	for row in doc.payment_schedule:
-		if row.custom_payment_type in PROTECTED_TYPES:
+		if _get_payment_type(row) in PROTECTED_TYPES:
 			protected_rows.append(row)
 		else:
 			emi_rows.append(row)
@@ -146,7 +151,7 @@ def _apply_emi_schedule(doc, num_emis, start_date, day_of_month):
 			"paid_amount": row.paid_amount,
 			"base_payment_amount": row.base_payment_amount,
 			"mode_of_payment": row.mode_of_payment,
-			"custom_payment_type": row.custom_payment_type,
+			"custom_payment_type": _get_payment_type(row),
 		})
 
 	# Add new EMI rows
@@ -220,14 +225,14 @@ def _cascade_to_purchase_invoices(po_name, num_emis, start_date, day_of_month):
 			continue
 
 		# Check for untagged rows
-		has_untagged = any(not row.custom_payment_type for row in pi_doc.payment_schedule)
+		has_untagged = any(not _get_payment_type(row) for row in pi_doc.payment_schedule)
 		if has_untagged:
 			skipped.append("{0} (has untagged rows)".format(pi_name))
 			continue
 
 		# Check if any non-protected row has payments
 		has_paid_emi = any(
-			row.custom_payment_type not in PROTECTED_TYPES and flt(row.paid_amount) > 0
+			_get_payment_type(row) not in PROTECTED_TYPES and flt(row.paid_amount) > 0
 			for row in pi_doc.payment_schedule
 		)
 		if has_paid_emi:
@@ -237,7 +242,7 @@ def _cascade_to_purchase_invoices(po_name, num_emis, start_date, day_of_month):
 		# Check for Payment Entry references on EMI rows
 		emi_row_names = [
 			row.name for row in pi_doc.payment_schedule
-			if row.custom_payment_type not in PROTECTED_TYPES
+			if _get_payment_type(row) not in PROTECTED_TYPES
 		]
 		if emi_row_names:
 			pe_refs = frappe.get_all(
