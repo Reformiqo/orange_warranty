@@ -29,6 +29,31 @@ A custom field `custom_payment_type` (Select: Advance / Delivery / EMI) on Payme
 
 ---
 
+Formal Requirements
+
+| DocType | Feature | Requirement |
+|---------|---------|-------------|
+| **Purchase Order** | EMI Recalc Button | Add a custom button labeled 'Recalculate EMI' on the Purchase Order form toolbar. Button visible only when document status is Draft, Submitted, or Partially Paid. |
+| **Purchase Order** | EMI Input Dialog | On clicking 'Recalculate EMI', the system must display a modal dialog asking: (a) Total number of EMIs (integer, min 1), (b) Start date for EMI 1, (c) Day of month for recurring payments (e.g., 10). |
+| **Purchase Order** | EMI Calculation | After input, system must calculate: Outstanding Amount = Invoice Total − Advance Paid − Delivery Payment. EMI Amount = Outstanding ÷ N. Each EMI date = Start Date + (n-1) months. |
+| **Purchase Order** | EMI Calculation | Rounding: Last EMI = Outstanding − Sum(EMI 1 to N-1). This ensures total always equals outstanding amount exactly. |
+| **Purchase Order** | Document Update | The new EMI schedule must REPLACE existing payment terms rows (EMI portion only) in the current document (PO or PI). Advance and Delivery rows must remain unchanged. |
+| **Purchase Order** | Document Update | If a linked Purchase Invoice exists for the PO, the system must also update payment terms in all linked PIs automatically after user confirmation. |
+| **Purchase Order** | Validation | System must validate: Total of all payment terms rows = 100% of invoice value. If mismatch > ₹1, show error and prevent save. |
+| **Purchase Order** | Validation | System must prevent EMI recalculation if any EMI installment is already marked as 'Paid' in the Payment Schedule. |
+| **Purchase Invoice** | EMI Recalc Button | Add the same 'Recalculate EMI' button on the Purchase Invoice form toolbar with identical behavior. |
+| **Purchase Invoice** | EMI Input Dialog | On clicking 'Recalculate EMI', the system must display a modal dialog asking: (a) Total number of EMIs (integer, min 1), (b) Start date for EMI 1, (c) Day of month for recurring payments (e.g., 10). |
+| **Purchase Invoice** | EMI Calculation | After input, system must calculate: Outstanding Amount = Invoice Total − Advance Paid − Delivery Payment. EMI Amount = Outstanding ÷ N. Each EMI date = Start Date + (n-1) months. |
+| **Purchase Invoice** | EMI Calculation | Rounding: Last EMI = Outstanding − Sum(EMI 1 to N-1). This ensures total always equals outstanding amount exactly. |
+| **Purchase Invoice** | Document Update | The new EMI schedule must REPLACE existing payment terms rows (EMI portion only) in the current document (PO or PI). Advance and Delivery rows must remain unchanged. |
+| **Purchase Invoice** | Document Update | If a linked Purchase Invoice exists for the PO, the system must also update payment terms in all linked PIs automatically after user confirmation. |
+| **Purchase Invoice** | Validation | System must validate: Total of all payment terms rows = 100% of invoice value. If mismatch > ₹1, show error and prevent save. |
+| **Purchase Invoice** | Validation | System must prevent EMI recalculation if any EMI installment is already marked as 'Paid' in the Payment Schedule. |
+
+> **Note:** "EMI portion" refers to the percentage remaining after Advance and Delivery rows. For example, if Advance = 20% and Delivery = 15%, then EMI portion = 65%. The exact split depends on the document's payment terms configuration.
+
+---
+
 Site Details
 
 ERPNext Version: v16 (Frappe Cloud)
@@ -159,7 +184,7 @@ Response
 Client Script: Purchase Order (EMI Button)
 
 Button Visibility
-Shown when: `docstatus !== 2` (not cancelled) AND `!frm.is_new()`
+Shown when: document status is Draft, Submitted, or Partially Paid (i.e., `docstatus !== 2` AND `!frm.is_new()`)
 Location: Actions → Recalculate EMI
 
 Dialog Fields
@@ -322,9 +347,9 @@ Slash Commands for Claude Code
 File Inventory
 
 File	Purpose
-`server_script_recalculate_emi.py`	Server Script code (paste into ERPNext)
-`client_script_po.js`	Client Script for Purchase Order
-`client_script_pi.js`	Client Script for Purchase Invoice
-`client_script_validation.js`	Validation script (create 2 copies: PO + PI)
-`OrangeOTec_EMI_Recalculation_Setup_Guide.docx`	Full setup guide with examples
-`CLAUDE.md`	This file — Claude Code context
+`orange_warranty/api_emi.py`	Server-side EMI recalculation logic (API endpoint)
+`orange_warranty/public/js/purchase_order.js`	Client Script for Purchase Order (EMI button + dialog + validation)
+`orange_warranty/public/js/purchase_invoice.js`	Client Script for Purchase Invoice (EMI button + dialog + validation)
+`orange_warranty/setup.py`	Custom field creation (`custom_payment_type` on Payment Schedule)
+`orange_warranty/hooks.py`	Module integration (doctype_js mappings, fixtures)
+`CLAUDE.md`	This file — Claude Code context and formal requirements
