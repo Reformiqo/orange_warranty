@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import getdate, today, nowdate, cint, flt
+from frappe.utils import cint, flt, getdate, nowdate, today
 
 
 class RMARequest(Document):

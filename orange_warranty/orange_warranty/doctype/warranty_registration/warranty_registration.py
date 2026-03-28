@@ -1,6 +1,6 @@
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate, today, date_diff
+from frappe.utils import date_diff, getdate, today
 
 
 class WarrantyRegistration(Document):

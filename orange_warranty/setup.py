@@ -9,7 +9,9 @@ def after_install():
 def create_custom_roles():
 	for role_name in ["RMA Manager", "RMA Director"]:
 		if not frappe.db.exists("Role", role_name):
-			frappe.get_doc({"doctype": "Role", "role_name": role_name, "desk_access": 1}).insert(ignore_permissions=True)
+			frappe.get_doc({"doctype": "Role", "role_name": role_name, "desk_access": 1}).insert(
+				ignore_permissions=True
+			)
 
 
 def create_custom_fields():

@@ -11,17 +11,9 @@ doctype_js = {
 	"Purchase Invoice": "public/js/purchase_invoice.js",
 }
 
-doc_events = {
-	"Delivery Note": {
-		"validate": "orange_warranty.events.delivery_note.validate_foc"
-	}
-}
+doc_events = {"Delivery Note": {"validate": "orange_warranty.events.delivery_note.validate_foc"}}
 
-scheduler_events = {
-	"daily_long": [
-		"orange_warranty.tasks.daily_warranty_update"
-	]
-}
+scheduler_events = {"daily_long": ["orange_warranty.tasks.daily_warranty_update"]}
 
 fixtures = [
 	{"dt": "Custom Field", "filters": [["module", "=", "Orange Warranty"]]},

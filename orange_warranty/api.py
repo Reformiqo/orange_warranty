@@ -2,7 +2,7 @@ import json
 
 import frappe
 from frappe import _
-from frappe.utils import nowdate, getdate, flt, add_days
+from frappe.utils import add_days, flt, getdate, nowdate
 
 
 @frappe.whitelist()
@@ -20,18 +20,14 @@ def set_replacement_serial(rma_name, new_serial_number):
 	sn_item = frappe.db.get_value("Serial No", new_serial_number, "item_code")
 	if sn_item != rma.item_code:
 		frappe.throw(
-			_("Serial {0} belongs to item {1}, not {2}.").format(
-				new_serial_number, sn_item, rma.item_code
-			)
+			_("Serial {0} belongs to item {1}, not {2}.").format(new_serial_number, sn_item, rma.item_code)
 		)
 
 	# Validate serial is in stock (active)
 	sn_status = frappe.db.get_value("Serial No", new_serial_number, "status")
 	if sn_status != "Active":
 		frappe.throw(
-			_("Serial {0} is not Active (current status: {1}).").format(
-				new_serial_number, sn_status
-			)
+			_("Serial {0} is not Active (current status: {1}).").format(new_serial_number, sn_status)
 		)
 
 	rma.new_serial_number = new_serial_number
@@ -80,9 +76,7 @@ def close_rma(rma_name):
 	rma.check_permission("write")
 
 	if rma.rma_status not in ("Faulty Received", "Returned to Parent", "Discarded"):
-		frappe.throw(
-			_("RMA can only be closed from Faulty Received, Returned, or Discarded status.")
-		)
+		frappe.throw(_("RMA can only be closed from Faulty Received, Returned, or Discarded status."))
 
 	rma.rma_status = "Closed"
 	rma.flags.ignore_validate_update_after_submit = True

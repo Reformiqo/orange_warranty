@@ -2,11 +2,7 @@ frappe.ui.form.on("Purchase Invoice", {
 	refresh(frm) {
 		if (frm.doc.docstatus === 2 || frm.is_new()) return;
 
-		frm.add_custom_button(
-			__("Recalculate EMI"),
-			() => show_emi_dialog_pi(frm),
-			__("Actions")
-		);
+		frm.add_custom_button(__("Recalculate EMI"), () => show_emi_dialog_pi(frm), __("Actions"));
 	},
 
 	validate(frm) {
@@ -48,7 +44,9 @@ function show_emi_dialog_pi(frm) {
 
 	if (outstanding <= 0) {
 		frappe.msgprint(
-			__("No outstanding amount to split into EMIs. Advance + Delivery covers the full Grand Total.")
+			__(
+				"No outstanding amount to split into EMIs. Advance + Delivery covers the full Grand Total."
+			)
 		);
 		return;
 	}
@@ -62,8 +60,14 @@ function show_emi_dialog_pi(frm) {
 				options: `
 					<div class="mb-3">
 						<p><strong>${__("Grand Total")}:</strong> ${format_currency(grand_total, frm.doc.currency)}</p>
-						<p><strong>${__("Advance + Delivery")}:</strong> ${format_currency(protected_amount, frm.doc.currency)} (${flt(protected_portion, 2)}%)</p>
-						<p><strong>${__("EMI Split Amount")}:</strong> ${format_currency(outstanding, frm.doc.currency)} (${flt(100 - protected_portion, 2)}%)</p>
+						<p><strong>${__("Advance + Delivery")}:</strong> ${format_currency(
+					protected_amount,
+					frm.doc.currency
+				)} (${flt(protected_portion, 2)}%)</p>
+						<p><strong>${__("EMI Split Amount")}:</strong> ${format_currency(
+					outstanding,
+					frm.doc.currency
+				)} (${flt(100 - protected_portion, 2)}%)</p>
 					</div>
 				`,
 			},
@@ -108,27 +112,29 @@ function show_emi_dialog_pi(frm) {
 			);
 
 			frappe.confirm(msg, () => {
-				frappe.xcall("orange_warranty.api_emi.recalculate_emi", {
-					doctype: "Purchase Invoice",
-					docname: frm.doc.name,
-					num_emis: values.num_emis,
-					start_date: values.start_date,
-					day_of_month: values.day_of_month,
-					cascade_to_pi: 0,
-				}).then((r) => {
-					d.hide();
-					frappe.show_alert(
-						{
-							message: __("EMI schedule updated: {0} installments of {1}", [
-								r.num_emis,
-								format_currency(r.emi_base_amount, frm.doc.currency),
-							]),
-							indicator: "green",
-						},
-						5
-					);
-					frm.reload_doc();
-				});
+				frappe
+					.xcall("orange_warranty.api_emi.recalculate_emi", {
+						doctype: "Purchase Invoice",
+						docname: frm.doc.name,
+						num_emis: values.num_emis,
+						start_date: values.start_date,
+						day_of_month: values.day_of_month,
+						cascade_to_pi: 0,
+					})
+					.then((r) => {
+						d.hide();
+						frappe.show_alert(
+							{
+								message: __("EMI schedule updated: {0} installments of {1}", [
+									r.num_emis,
+									format_currency(r.emi_base_amount, frm.doc.currency),
+								]),
+								indicator: "green",
+							},
+							5
+						);
+						frm.reload_doc();
+					});
 			});
 		},
 	});

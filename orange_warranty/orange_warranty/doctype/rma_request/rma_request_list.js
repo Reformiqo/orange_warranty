@@ -11,8 +11,6 @@ frappe.listview_settings["RMA Request"] = {
 			Closed: ["Closed", "green"],
 		};
 		const m = map[doc.rma_status];
-		return m
-			? [__(m[0]), m[1], "rma_status,=," + doc.rma_status]
-			: null;
+		return m ? [__(m[0]), m[1], "rma_status,=," + doc.rma_status] : null;
 	},
 };

@@ -1,6 +1,6 @@
 import frappe
 from frappe.tests import UnitTestCase
-from frappe.utils import add_months, today, add_days
+from frappe.utils import add_days, add_months, today
 
 
 class TestWarrantyRegistration(UnitTestCase):
@@ -12,46 +12,57 @@ class TestWarrantyRegistration(UnitTestCase):
 	@classmethod
 	def _setup_test_data(cls):
 		if not frappe.db.exists("Item Group", "Head"):
-			frappe.get_doc({"doctype": "Item Group", "item_group_name": "Head", "parent_item_group": "All Item Groups"}).insert()
+			frappe.get_doc(
+				{"doctype": "Item Group", "item_group_name": "Head", "parent_item_group": "All Item Groups"}
+			).insert()
 			frappe.db.commit()
 		if not frappe.db.exists("Item", "TEST-HEAD-001"):
-			frappe.get_doc({
-				"doctype": "Item",
-				"item_code": "TEST-HEAD-001",
-				"item_name": "Test Head Item",
-				"item_group": "Head",
-				"has_serial_no": 1,
-				"stock_uom": "Nos",
-			}).insert()
+			frappe.get_doc(
+				{
+					"doctype": "Item",
+					"item_code": "TEST-HEAD-001",
+					"item_name": "Test Head Item",
+					"item_group": "Head",
+					"has_serial_no": 1,
+					"stock_uom": "Nos",
+				}
+			).insert()
 			frappe.db.commit()
 		if not frappe.db.exists("Customer", "Test WR Customer"):
-			frappe.get_doc({
-				"doctype": "Customer",
-				"customer_name": "Test WR Customer",
-				"customer_group": "All Customer Groups",
-				"territory": "All Territories",
-			}).insert()
+			frappe.get_doc(
+				{
+					"doctype": "Customer",
+					"customer_name": "Test WR Customer",
+					"customer_group": "All Customer Groups",
+					"territory": "All Territories",
+				}
+			).insert()
 			frappe.db.commit()
 
 	def get_warehouse(self):
-		company = frappe.db.get_single_value("Global Defaults", "default_company") or frappe.db.get_all("Company", limit=1)[0].name
+		company = (
+			frappe.db.get_single_value("Global Defaults", "default_company")
+			or frappe.db.get_all("Company", limit=1)[0].name
+		)
 		warehouses = frappe.db.get_all("Warehouse", filters={"company": company, "is_group": 0}, limit=1)
 		return warehouses[0].name if warehouses else "Stores - _TC"
 
 	def make_warranty_registration(self, **kwargs):
 		wh = self.get_warehouse()
-		wr = frappe.get_doc({
-			"doctype": "Warranty Registration",
-			"category": kwargs.get("category", "Head"),
-			"item_code": kwargs.get("item_code", "TEST-HEAD-001"),
-			"serial_number": kwargs.get("serial_number"),
-			"customer": kwargs.get("customer", "Test WR Customer"),
-			"warranty_start_date": kwargs.get("warranty_start_date", today()),
-			"warranty_end_date": kwargs.get("warranty_end_date", add_months(today(), 12)),
-			"warranty_type": kwargs.get("warranty_type", "Orange Warranty"),
-			"warehouse": kwargs.get("warehouse", wh),
-			"quantity": 1,
-		})
+		wr = frappe.get_doc(
+			{
+				"doctype": "Warranty Registration",
+				"category": kwargs.get("category", "Head"),
+				"item_code": kwargs.get("item_code", "TEST-HEAD-001"),
+				"serial_number": kwargs.get("serial_number"),
+				"customer": kwargs.get("customer", "Test WR Customer"),
+				"warranty_start_date": kwargs.get("warranty_start_date", today()),
+				"warranty_end_date": kwargs.get("warranty_end_date", add_months(today(), 12)),
+				"warranty_type": kwargs.get("warranty_type", "Orange Warranty"),
+				"warehouse": kwargs.get("warehouse", wh),
+				"quantity": 1,
+			}
+		)
 		wr.insert()
 		return wr
 
