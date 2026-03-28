@@ -2,6 +2,48 @@ import frappe
 from frappe.tests import UnitTestCase
 from frappe.utils import add_days, add_months, today
 
+PREREQUISITES = [
+	{"doctype": "Item Group", "item_group_name": "All Item Groups", "is_group": 1},
+	{"doctype": "UOM", "uom_name": "Nos"},
+	{"doctype": "UOM", "uom_name": "Unit"},
+	{
+		"doctype": "Territory",
+		"territory_name": "All Territories",
+		"is_group": 1,
+	},
+	{
+		"doctype": "Customer Group",
+		"customer_group_name": "All Customer Groups",
+		"is_group": 1,
+	},
+]
+
+
+def _ensure_erpnext_prerequisites():
+	"""Create minimal ERPNext master data needed for tests (idempotent)."""
+	for rec in PREREQUISITES:
+		dt = rec["doctype"]
+		name = (
+			rec.get("item_group_name")
+			or rec.get("uom_name")
+			or rec.get("territory_name")
+			or rec.get("customer_group_name")
+		)
+		if not frappe.db.exists(dt, name):
+			frappe.get_doc(rec).insert(ignore_permissions=True, ignore_if_duplicate=True)
+	# Ensure a default company exists
+	if not frappe.db.get_all("Company", limit=1):
+		frappe.get_doc(
+			{
+				"doctype": "Company",
+				"company_name": "_Test Company",
+				"abbr": "_TC",
+				"default_currency": "INR",
+				"country": "India",
+			}
+		).insert(ignore_permissions=True)
+	frappe.db.commit()  # nosemgrep
+
 
 class TestRMARequest(UnitTestCase):
 	@classmethod
@@ -11,9 +53,7 @@ class TestRMARequest(UnitTestCase):
 
 	@classmethod
 	def _setup_test_data(cls):
-		from erpnext.setup.utils import before_tests
-
-		before_tests()
+		_ensure_erpnext_prerequisites()
 
 		if not frappe.db.exists("Item Group", "Head"):
 			frappe.get_doc(
