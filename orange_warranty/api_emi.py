@@ -12,7 +12,9 @@ def _get_payment_type(row):
 
 
 @frappe.whitelist()
-def recalculate_emi(doctype, docname, num_emis, start_date, day_of_month, cascade_to_pi=0):
+def recalculate_emi(
+	doctype: str, docname: str, num_emis: int, start_date: str, day_of_month: int, cascade_to_pi: int = 0
+):
 	"""Recalculate EMI rows in the payment schedule of a Purchase Order or Purchase Invoice.
 
 	Preserves Advance/Delivery rows and replaces all other rows with N equal monthly EMIs.

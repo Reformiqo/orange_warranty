@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import date_diff, getdate, today
 
@@ -12,7 +13,7 @@ class WarrantyRegistration(Document):
 	def validate_dates(self):
 		if self.warranty_start_date and self.warranty_end_date:
 			if getdate(self.warranty_end_date) < getdate(self.warranty_start_date):
-				frappe.throw("Warranty End Date cannot be before Start Date.")
+				frappe.throw(_("Warranty End Date cannot be before Start Date."))
 
 	def compute_warranty_status(self):
 		if self.warranty_end_date:

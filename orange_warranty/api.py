@@ -6,7 +6,7 @@ from frappe.utils import add_days, flt, getdate, nowdate
 
 
 @frappe.whitelist()
-def set_replacement_serial(rma_name, new_serial_number):
+def set_replacement_serial(rma_name: str, new_serial_number: str):
 	"""Set replacement serial. Validates item match and uniqueness."""
 	rma = frappe.get_doc("RMA Request", rma_name)
 	rma.check_permission("write")
@@ -36,7 +36,7 @@ def set_replacement_serial(rma_name, new_serial_number):
 
 
 @frappe.whitelist()
-def mark_faulty_received(rma_name, date_of_inward, returnable_to_parent):
+def mark_faulty_received(rma_name: str, date_of_inward: str, returnable_to_parent: str):
 	"""Mark faulty received. Triggers auto inward Stock Entry."""
 	rma = frappe.get_doc("RMA Request", rma_name)
 	rma.check_permission("write")
@@ -55,7 +55,7 @@ def mark_faulty_received(rma_name, date_of_inward, returnable_to_parent):
 
 
 @frappe.whitelist()
-def mark_returned_to_parent(rma_name, returned_date, tracking=None):
+def mark_returned_to_parent(rma_name: str, returned_date: str, tracking: str | None = None):
 	"""Mark faulty part returned to manufacturer."""
 	rma = frappe.get_doc("RMA Request", rma_name)
 	rma.check_permission("write")
@@ -70,7 +70,7 @@ def mark_returned_to_parent(rma_name, returned_date, tracking=None):
 
 
 @frappe.whitelist()
-def close_rma(rma_name):
+def close_rma(rma_name: str):
 	"""Close RMA. Triggers serial swap on Warranty Registration."""
 	rma = frappe.get_doc("RMA Request", rma_name)
 	rma.check_permission("write")
@@ -84,7 +84,7 @@ def close_rma(rma_name):
 
 
 @frappe.whitelist()
-def get_credit_summary(customer, companies):
+def get_credit_summary(customer: str, companies: str | list):
 	"""Get credit summary data for a customer across selected companies."""
 	if isinstance(companies, str):
 		companies = json.loads(companies)

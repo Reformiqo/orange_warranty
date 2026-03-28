@@ -15,7 +15,7 @@ class TestRMARequest(UnitTestCase):
 			frappe.get_doc(
 				{"doctype": "Item Group", "item_group_name": "Head", "parent_item_group": "All Item Groups"}
 			).insert()
-			frappe.db.commit()
+			frappe.db.commit()  # nosemgrep  # nosemgrep
 		if not frappe.db.exists("Item", "TEST-HEAD-001"):
 			frappe.get_doc(
 				{
@@ -27,7 +27,7 @@ class TestRMARequest(UnitTestCase):
 					"stock_uom": "Nos",
 				}
 			).insert()
-			frappe.db.commit()
+			frappe.db.commit()  # nosemgrep
 		if not frappe.db.exists("Customer", "Test RMA Customer"):
 			frappe.get_doc(
 				{
@@ -37,7 +37,7 @@ class TestRMARequest(UnitTestCase):
 					"territory": "All Territories",
 				}
 			).insert()
-			frappe.db.commit()
+			frappe.db.commit()  # nosemgrep
 
 	def get_warehouse(self):
 		company = (
