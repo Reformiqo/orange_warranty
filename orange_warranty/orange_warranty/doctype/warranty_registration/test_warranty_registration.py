@@ -11,15 +11,14 @@ class TestWarrantyRegistration(UnitTestCase):
 
 	@classmethod
 	def _setup_test_data(cls):
-		if not frappe.db.exists("Item Group", "All Item Groups"):
-			frappe.get_doc(
-				{"doctype": "Item Group", "item_group_name": "All Item Groups", "is_group": 1}
-			).insert(ignore_permissions=True)
-			frappe.db.commit()  # nosemgrep
+		from erpnext.setup.utils import before_tests
+
+		before_tests()
+
 		if not frappe.db.exists("Item Group", "Head"):
 			frappe.get_doc(
 				{"doctype": "Item Group", "item_group_name": "Head", "parent_item_group": "All Item Groups"}
-			).insert()
+			).insert(ignore_permissions=True)
 			frappe.db.commit()  # nosemgrep
 		if not frappe.db.exists("Item", "TEST-HEAD-001"):
 			frappe.get_doc(
@@ -31,7 +30,7 @@ class TestWarrantyRegistration(UnitTestCase):
 					"has_serial_no": 1,
 					"stock_uom": "Nos",
 				}
-			).insert()
+			).insert(ignore_permissions=True)
 			frappe.db.commit()  # nosemgrep
 		if not frappe.db.exists("Customer", "Test WR Customer"):
 			frappe.get_doc(
@@ -41,7 +40,7 @@ class TestWarrantyRegistration(UnitTestCase):
 					"customer_group": "All Customer Groups",
 					"territory": "All Territories",
 				}
-			).insert()
+			).insert(ignore_permissions=True)
 			frappe.db.commit()  # nosemgrep
 
 	def get_warehouse(self):

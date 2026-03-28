@@ -102,6 +102,7 @@ jobs:
         working-directory: /home/runner/frappe-bench
         run: |
           bench --site test_site set-config allow_tests true
+          bench --site test_site execute erpnext.setup.utils.before_tests
           bench --site test_site run-tests --app orange_warranty
         env:
           TYPE: server
