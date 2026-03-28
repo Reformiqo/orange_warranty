@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, cint, add_months, get_last_day
-
+from frappe.utils import add_months, cint, flt, get_last_day, getdate
 
 ALLOWED_DOCTYPES = ("Purchase Order", "Purchase Invoice")
 PROTECTED_TYPES = ("Advance", "Delivery")
@@ -13,7 +12,9 @@ def _get_payment_type(row):
 
 
 @frappe.whitelist()
-def recalculate_emi(doctype, docname, num_emis, start_date, day_of_month, cascade_to_pi=0):
+def recalculate_emi(
+	doctype: str, docname: str, num_emis: int, start_date: str, day_of_month: int, cascade_to_pi: int = 0
+):
 	"""Recalculate EMI rows in the payment schedule of a Purchase Order or Purchase Invoice.
 
 	Preserves Advance/Delivery rows and replaces all other rows with N equal monthly EMIs.
@@ -60,22 +61,18 @@ def recalculate_emi(doctype, docname, num_emis, start_date, day_of_month, cascad
 def _validate_before_recalculation(doc):
 	"""Run pre-flight checks before allowing recalculation."""
 	# Guard against untagged rows being silently replaced
-	untagged = [
-		row for row in doc.payment_schedule
-		if not _get_payment_type(row)
-	]
+	untagged = [row for row in doc.payment_schedule if not _get_payment_type(row)]
 	if untagged:
 		frappe.throw(
-			_("Found {0} untagged payment schedule row(s) (missing Payment Type). "
-			  "Please tag each row as Advance, Delivery, or EMI before recalculating.").format(
-				len(untagged)
-			)
+			_(
+				"Found {0} untagged payment schedule row(s) (missing Payment Type). "
+				"Please tag each row as Advance, Delivery, or EMI before recalculating."
+			).format(len(untagged))
 		)
 
 	# Check for Payment Entry references on EMI rows that would be orphaned
 	emi_row_names = [
-		row.name for row in doc.payment_schedule
-		if _get_payment_type(row) not in PROTECTED_TYPES
+		row.name for row in doc.payment_schedule if _get_payment_type(row) not in PROTECTED_TYPES
 	]
 	if emi_row_names:
 		pe_refs = frappe.get_all(
@@ -92,8 +89,10 @@ def _validate_before_recalculation(doc):
 		if pe_refs:
 			pe_names = ", ".join(set(r.parent for r in pe_refs))
 			frappe.throw(
-				_("Cannot recalculate: Payment Entry references exist on EMI rows ({0}). "
-				  "Cancel or unlink the Payment Entries first.").format(pe_names)
+				_(
+					"Cannot recalculate: Payment Entry references exist on EMI rows ({0}). "
+					"Cancel or unlink the Payment Entries first."
+				).format(pe_names)
 			)
 
 
@@ -141,18 +140,21 @@ def _apply_emi_schedule(doc, num_emis, start_date, day_of_month):
 
 	# Re-add protected rows
 	for row in protected_rows:
-		doc.append("payment_schedule", {
-			"payment_term": row.payment_term,
-			"description": row.description,
-			"due_date": row.due_date,
-			"invoice_portion": row.invoice_portion,
-			"payment_amount": row.payment_amount,
-			"outstanding": row.outstanding,
-			"paid_amount": row.paid_amount,
-			"base_payment_amount": row.base_payment_amount,
-			"mode_of_payment": row.mode_of_payment,
-			"custom_payment_type": _get_payment_type(row),
-		})
+		doc.append(
+			"payment_schedule",
+			{
+				"payment_term": row.payment_term,
+				"description": row.description,
+				"due_date": row.due_date,
+				"invoice_portion": row.invoice_portion,
+				"payment_amount": row.payment_amount,
+				"outstanding": row.outstanding,
+				"paid_amount": row.paid_amount,
+				"base_payment_amount": row.base_payment_amount,
+				"mode_of_payment": row.mode_of_payment,
+				"custom_payment_type": _get_payment_type(row),
+			},
+		)
 
 	# Add new EMI rows
 	for i in range(num_emis):
@@ -165,16 +167,19 @@ def _apply_emi_schedule(doc, num_emis, start_date, day_of_month):
 			amount = emi_base_amount
 			portion = emi_base_portion
 
-		doc.append("payment_schedule", {
-			"description": "EMI {0} of {1}".format(i + 1, num_emis),
-			"due_date": emi_dates[i],
-			"invoice_portion": portion,
-			"payment_amount": amount,
-			"outstanding": amount,
-			"paid_amount": 0,
-			"base_payment_amount": flt(amount * conversion_rate, 2),
-			"custom_payment_type": "EMI",
-		})
+		doc.append(
+			"payment_schedule",
+			{
+				"description": "EMI {0} of {1}".format(i + 1, num_emis),
+				"due_date": emi_dates[i],
+				"invoice_portion": portion,
+				"payment_amount": amount,
+				"outstanding": amount,
+				"paid_amount": 0,
+				"base_payment_amount": flt(amount * conversion_rate, 2),
+				"custom_payment_type": "EMI",
+			},
+		)
 
 	doc.flags.ignore_validate_update_after_submit = True
 	doc.save()
@@ -241,8 +246,7 @@ def _cascade_to_purchase_invoices(po_name, num_emis, start_date, day_of_month):
 
 		# Check for Payment Entry references on EMI rows
 		emi_row_names = [
-			row.name for row in pi_doc.payment_schedule
-			if _get_payment_type(row) not in PROTECTED_TYPES
+			row.name for row in pi_doc.payment_schedule if _get_payment_type(row) not in PROTECTED_TYPES
 		]
 		if emi_row_names:
 			pe_refs = frappe.get_all(

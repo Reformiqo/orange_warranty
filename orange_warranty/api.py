@@ -2,11 +2,11 @@ import json
 
 import frappe
 from frappe import _
-from frappe.utils import nowdate, getdate, flt, add_days
+from frappe.utils import add_days, flt, getdate, nowdate
 
 
 @frappe.whitelist()
-def set_replacement_serial(rma_name, new_serial_number):
+def set_replacement_serial(rma_name: str, new_serial_number: str):
 	"""Set replacement serial. Validates item match and uniqueness."""
 	rma = frappe.get_doc("RMA Request", rma_name)
 	rma.check_permission("write")
@@ -20,18 +20,14 @@ def set_replacement_serial(rma_name, new_serial_number):
 	sn_item = frappe.db.get_value("Serial No", new_serial_number, "item_code")
 	if sn_item != rma.item_code:
 		frappe.throw(
-			_("Serial {0} belongs to item {1}, not {2}.").format(
-				new_serial_number, sn_item, rma.item_code
-			)
+			_("Serial {0} belongs to item {1}, not {2}.").format(new_serial_number, sn_item, rma.item_code)
 		)
 
 	# Validate serial is in stock (active)
 	sn_status = frappe.db.get_value("Serial No", new_serial_number, "status")
 	if sn_status != "Active":
 		frappe.throw(
-			_("Serial {0} is not Active (current status: {1}).").format(
-				new_serial_number, sn_status
-			)
+			_("Serial {0} is not Active (current status: {1}).").format(new_serial_number, sn_status)
 		)
 
 	rma.new_serial_number = new_serial_number
@@ -40,7 +36,7 @@ def set_replacement_serial(rma_name, new_serial_number):
 
 
 @frappe.whitelist()
-def mark_faulty_received(rma_name, date_of_inward, returnable_to_parent):
+def mark_faulty_received(rma_name: str, date_of_inward: str, returnable_to_parent: str):
 	"""Mark faulty received. Triggers auto inward Stock Entry."""
 	rma = frappe.get_doc("RMA Request", rma_name)
 	rma.check_permission("write")
@@ -59,7 +55,7 @@ def mark_faulty_received(rma_name, date_of_inward, returnable_to_parent):
 
 
 @frappe.whitelist()
-def mark_returned_to_parent(rma_name, returned_date, tracking=None):
+def mark_returned_to_parent(rma_name: str, returned_date: str, tracking: str | None = None):
 	"""Mark faulty part returned to manufacturer."""
 	rma = frappe.get_doc("RMA Request", rma_name)
 	rma.check_permission("write")
@@ -74,15 +70,13 @@ def mark_returned_to_parent(rma_name, returned_date, tracking=None):
 
 
 @frappe.whitelist()
-def close_rma(rma_name):
+def close_rma(rma_name: str):
 	"""Close RMA. Triggers serial swap on Warranty Registration."""
 	rma = frappe.get_doc("RMA Request", rma_name)
 	rma.check_permission("write")
 
 	if rma.rma_status not in ("Faulty Received", "Returned to Parent", "Discarded"):
-		frappe.throw(
-			_("RMA can only be closed from Faulty Received, Returned, or Discarded status.")
-		)
+		frappe.throw(_("RMA can only be closed from Faulty Received, Returned, or Discarded status."))
 
 	rma.rma_status = "Closed"
 	rma.flags.ignore_validate_update_after_submit = True
@@ -90,7 +84,7 @@ def close_rma(rma_name):
 
 
 @frappe.whitelist()
-def get_credit_summary(customer, companies):
+def get_credit_summary(customer: str, companies: str | list):
 	"""Get credit summary data for a customer across selected companies."""
 	if isinstance(companies, str):
 		companies = json.loads(companies)

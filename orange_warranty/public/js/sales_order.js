@@ -25,14 +25,14 @@ function show_credit_summary(frm) {
 				fieldtype: "MultiSelectList",
 				label: __("Company"),
 				get_data: function () {
-					return frappe.xcall(
-						"orange_warranty.api.get_company_list"
-					).then((companies) => {
-						return companies.map((c) => ({
-							value: c,
-							description: c,
-						}));
-					});
+					return frappe
+						.xcall("orange_warranty.api.get_company_list")
+						.then((companies) => {
+							return companies.map((c) => ({
+								value: c,
+								description: c,
+							}));
+						});
 				},
 			},
 			{ fieldtype: "Section Break" },
@@ -111,18 +111,20 @@ function show_credit_summary(frm) {
 }
 
 function fetch_credit_data(dialog, customer, companies, so_amount) {
-	frappe.xcall("orange_warranty.api.get_credit_summary", {
-		customer: customer,
-		companies: companies,
-	}).then((data) => {
-		dialog.set_value("outstanding_amount", data.outstanding_amount || 0);
-		dialog.set_value("overdue_30_days", data.overdue_30_days || 0);
-		dialog.set_value("credit_limit", data.credit_limit || 0);
-		dialog.set_value("payment_terms", data.payment_terms || "");
+	frappe
+		.xcall("orange_warranty.api.get_credit_summary", {
+			customer: customer,
+			companies: companies,
+		})
+		.then((data) => {
+			dialog.set_value("outstanding_amount", data.outstanding_amount || 0);
+			dialog.set_value("overdue_30_days", data.overdue_30_days || 0);
+			dialog.set_value("credit_limit", data.credit_limit || 0);
+			dialog.set_value("payment_terms", data.payment_terms || "");
 
-		let total_exposure = (data.outstanding_amount || 0) + (so_amount || 0);
-		dialog.set_value("total_exposure", total_exposure);
-	});
+			let total_exposure = (data.outstanding_amount || 0) + (so_amount || 0);
+			dialog.set_value("total_exposure", total_exposure);
+		});
 }
 
 function clear_credit_fields(dialog) {

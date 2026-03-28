@@ -12,10 +12,7 @@ frappe.ui.form.on("RMA Request", {
 		// Serial swap info
 		if (frm.doc.old_serial_number && frm.doc.new_serial_number)
 			frm.dashboard.add_comment(
-				__("Serial: {0} → {1}", [
-					frm.doc.old_serial_number,
-					frm.doc.new_serial_number,
-				]),
+				__("Serial: {0} → {1}", [frm.doc.old_serial_number, frm.doc.new_serial_number]),
 				"blue",
 				true
 			);
@@ -54,13 +51,12 @@ frappe.ui.form.on("RMA Request", {
 							},
 						],
 						(v) => {
-							frappe.xcall(
-								"orange_warranty.api.set_replacement_serial",
-								{
+							frappe
+								.xcall("orange_warranty.api.set_replacement_serial", {
 									rma_name: frm.doc.name,
 									new_serial_number: v.sn,
-								}
-							).then(() => frm.reload_doc());
+								})
+								.then(() => frm.reload_doc());
 						},
 						__("Replacement Serial"),
 						__("Confirm")
@@ -72,9 +68,7 @@ frappe.ui.form.on("RMA Request", {
 
 		// 2. Receive faulty part
 		if (
-			["Approved", "Replacement Dispatched"].includes(
-				frm.doc.rma_status
-			) &&
+			["Approved", "Replacement Dispatched"].includes(frm.doc.rma_status) &&
 			!frm.doc.faulty_part_received
 		) {
 			frm.add_custom_button(
@@ -98,14 +92,13 @@ frappe.ui.form.on("RMA Request", {
 							},
 						],
 						(v) => {
-							frappe.xcall(
-								"orange_warranty.api.mark_faulty_received",
-								{
+							frappe
+								.xcall("orange_warranty.api.mark_faulty_received", {
 									rma_name: frm.doc.name,
 									date_of_inward: v.dt,
 									returnable_to_parent: v.ret,
-								}
-							).then(() => frm.reload_doc());
+								})
+								.then(() => frm.reload_doc());
 						},
 						__("Receive Faulty"),
 						__("Confirm")
@@ -140,14 +133,13 @@ frappe.ui.form.on("RMA Request", {
 							},
 						],
 						(v) => {
-							frappe.xcall(
-								"orange_warranty.api.mark_returned_to_parent",
-								{
+							frappe
+								.xcall("orange_warranty.api.mark_returned_to_parent", {
 									rma_name: frm.doc.name,
 									returned_date: v.dt,
 									tracking: v.trk,
-								}
-							).then(() => frm.reload_doc());
+								})
+								.then(() => frm.reload_doc());
 						},
 						__("Return to Parent"),
 						__("Confirm")
@@ -158,22 +150,17 @@ frappe.ui.form.on("RMA Request", {
 		}
 
 		// 4. Close RMA
-		if (
-			["Faulty Received", "Returned to Parent", "Discarded"].includes(
-				frm.doc.rma_status
-			)
-		) {
+		if (["Faulty Received", "Returned to Parent", "Discarded"].includes(frm.doc.rma_status)) {
 			frm.add_custom_button(
 				__("Close RMA"),
 				() => {
-					frappe.confirm(
-						__("Close this RMA? Serial swap will be applied."),
-						() => {
-							frappe.xcall("orange_warranty.api.close_rma", {
+					frappe.confirm(__("Close this RMA? Serial swap will be applied."), () => {
+						frappe
+							.xcall("orange_warranty.api.close_rma", {
 								rma_name: frm.doc.name,
-							}).then(() => frm.reload_doc());
-						}
-					);
+							})
+							.then(() => frm.reload_doc());
+					});
 				},
 				__("Actions")
 			);

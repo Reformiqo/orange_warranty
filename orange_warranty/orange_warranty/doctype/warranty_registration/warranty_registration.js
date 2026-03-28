@@ -24,21 +24,16 @@ frappe.ui.form.on("Warranty Registration", {
 
 function calc_end_date(frm) {
 	if (frm.doc.item_code && frm.doc.warranty_start_date) {
-		frappe.db.get_value(
-			"Item",
-			frm.doc.item_code,
-			"custom_warranty_months",
-			(r) => {
-				if (r && r.custom_warranty_months) {
-					frm.set_value(
-						"warranty_end_date",
-						frappe.datetime.add_months(
-							frm.doc.warranty_start_date,
-							r.custom_warranty_months
-						)
-					);
-				}
+		frappe.db.get_value("Item", frm.doc.item_code, "custom_warranty_months", (r) => {
+			if (r && r.custom_warranty_months) {
+				frm.set_value(
+					"warranty_end_date",
+					frappe.datetime.add_months(
+						frm.doc.warranty_start_date,
+						r.custom_warranty_months
+					)
+				);
 			}
-		);
+		});
 	}
 }

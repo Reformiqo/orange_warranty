@@ -1,6 +1,53 @@
 import frappe
 from frappe.tests import UnitTestCase
-from frappe.utils import add_months, today, add_days
+from frappe.utils import add_days, add_months, today
+
+PREREQUISITES = [
+	{"doctype": "Item Group", "item_group_name": "All Item Groups", "is_group": 1},
+	{"doctype": "UOM", "uom_name": "Nos"},
+	{"doctype": "UOM", "uom_name": "Unit"},
+	{
+		"doctype": "Territory",
+		"territory_name": "All Territories",
+		"is_group": 1,
+	},
+	{
+		"doctype": "Customer Group",
+		"customer_group_name": "All Customer Groups",
+		"is_group": 1,
+	},
+]
+
+
+def _ensure_erpnext_prerequisites():
+	"""Create minimal ERPNext master data needed for tests (idempotent)."""
+	for rec in PREREQUISITES:
+		dt = rec["doctype"]
+		name = (
+			rec.get("item_group_name")
+			or rec.get("uom_name")
+			or rec.get("territory_name")
+			or rec.get("customer_group_name")
+		)
+		if not frappe.db.exists(dt, name):
+			frappe.get_doc(rec).insert(ignore_permissions=True, ignore_if_duplicate=True)
+	# Ensure a default company exists — use in_import flag to skip link
+	# validation in Company.on_update hooks (warehouses, cost centers, etc.)
+	if not frappe.db.get_all("Company", limit=1):
+		frappe.flags.in_import = True
+		try:
+			frappe.get_doc(
+				{
+					"doctype": "Company",
+					"company_name": "_Test Company",
+					"abbr": "_TC",
+					"default_currency": "INR",
+					"country": "India",
+				}
+			).insert(ignore_permissions=True)
+		finally:
+			frappe.flags.in_import = False
+	frappe.db.commit()  # nosemgrep
 
 
 class TestRMARequest(UnitTestCase):
@@ -11,58 +58,73 @@ class TestRMARequest(UnitTestCase):
 
 	@classmethod
 	def _setup_test_data(cls):
+		_ensure_erpnext_prerequisites()
+
 		if not frappe.db.exists("Item Group", "Head"):
-			frappe.get_doc({"doctype": "Item Group", "item_group_name": "Head", "parent_item_group": "All Item Groups"}).insert()
-			frappe.db.commit()
+			frappe.get_doc(
+				{"doctype": "Item Group", "item_group_name": "Head", "parent_item_group": "All Item Groups"}
+			).insert(ignore_permissions=True)
+			frappe.db.commit()  # nosemgrep
 		if not frappe.db.exists("Item", "TEST-HEAD-001"):
-			frappe.get_doc({
-				"doctype": "Item",
-				"item_code": "TEST-HEAD-001",
-				"item_name": "Test Head Item",
-				"item_group": "Head",
-				"has_serial_no": 1,
-				"stock_uom": "Nos",
-			}).insert()
-			frappe.db.commit()
+			frappe.get_doc(
+				{
+					"doctype": "Item",
+					"item_code": "TEST-HEAD-001",
+					"item_name": "Test Head Item",
+					"item_group": "Head",
+					"has_serial_no": 1,
+					"stock_uom": "Nos",
+				}
+			).insert(ignore_permissions=True)
+			frappe.db.commit()  # nosemgrep
 		if not frappe.db.exists("Customer", "Test RMA Customer"):
-			frappe.get_doc({
-				"doctype": "Customer",
-				"customer_name": "Test RMA Customer",
-				"customer_group": "All Customer Groups",
-				"territory": "All Territories",
-			}).insert()
-			frappe.db.commit()
+			frappe.get_doc(
+				{
+					"doctype": "Customer",
+					"customer_name": "Test RMA Customer",
+					"customer_group": "All Customer Groups",
+					"territory": "All Territories",
+				}
+			).insert(ignore_permissions=True)
+			frappe.db.commit()  # nosemgrep
 
 	def get_warehouse(self):
-		company = frappe.db.get_single_value("Global Defaults", "default_company") or frappe.db.get_all("Company", limit=1)[0].name
+		company = (
+			frappe.db.get_single_value("Global Defaults", "default_company")
+			or frappe.db.get_all("Company", limit=1)[0].name
+		)
 		warehouses = frappe.db.get_all("Warehouse", filters={"company": company, "is_group": 0}, limit=1)
 		return warehouses[0].name if warehouses else "Stores - _TC"
 
 	def make_warranty_registration(self, **kwargs):
 		wh = self.get_warehouse()
-		wr = frappe.get_doc({
-			"doctype": "Warranty Registration",
-			"category": kwargs.get("category", "Head"),
-			"item_code": "TEST-HEAD-001",
-			"customer": "Test RMA Customer",
-			"warranty_start_date": kwargs.get("warranty_start_date", today()),
-			"warranty_end_date": kwargs.get("warranty_end_date", add_months(today(), 12)),
-			"warranty_type": kwargs.get("warranty_type", "Orange Warranty"),
-			"warehouse": wh,
-			"quantity": 1,
-		})
+		wr = frappe.get_doc(
+			{
+				"doctype": "Warranty Registration",
+				"category": kwargs.get("category", "Head"),
+				"item_code": "TEST-HEAD-001",
+				"customer": "Test RMA Customer",
+				"warranty_start_date": kwargs.get("warranty_start_date", today()),
+				"warranty_end_date": kwargs.get("warranty_end_date", add_months(today(), 12)),
+				"warranty_type": kwargs.get("warranty_type", "Orange Warranty"),
+				"warehouse": wh,
+				"quantity": 1,
+			}
+		)
 		wr.insert()
 		return wr
 
 	def make_rma_request(self, wr=None, **kwargs):
 		if not wr:
 			wr = self.make_warranty_registration(**kwargs)
-		rma = frappe.get_doc({
-			"doctype": "RMA Request",
-			"warranty_registration": wr.name,
-			"fault_description": kwargs.get("fault_description", "Test fault - unit not powering on"),
-			"replacement_source": kwargs.get("replacement_source", "Own Stock"),
-		})
+		rma = frappe.get_doc(
+			{
+				"doctype": "RMA Request",
+				"warranty_registration": wr.name,
+				"fault_description": kwargs.get("fault_description", "Test fault - unit not powering on"),
+				"replacement_source": kwargs.get("replacement_source", "Own Stock"),
+			}
+		)
 		rma.insert()
 		return rma
 
@@ -90,13 +152,15 @@ class TestRMARequest(UnitTestCase):
 			warranty_end_date=add_days(today(), -30),
 		)
 		with self.assertRaises(frappe.exceptions.ValidationError):
-			rma = frappe.get_doc({
-				"doctype": "RMA Request",
-				"warranty_registration": wr.name,
-				"fault_description": "Test fault",
-				"replacement_source": "Own Stock",
-				"replacement_cost": -100,
-			})
+			rma = frappe.get_doc(
+				{
+					"doctype": "RMA Request",
+					"warranty_registration": wr.name,
+					"fault_description": "Test fault",
+					"replacement_source": "Own Stock",
+					"replacement_cost": -100,
+				}
+			)
 			rma.insert()
 
 	def test_rma_submit_under_warranty(self):

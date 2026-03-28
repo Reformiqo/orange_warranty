@@ -13,4 +13,4 @@ def daily_warranty_update():
 	""",
 		today(),
 	)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep
