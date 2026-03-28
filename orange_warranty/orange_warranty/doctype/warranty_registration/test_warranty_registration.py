@@ -31,17 +31,22 @@ def _ensure_erpnext_prerequisites():
 		)
 		if not frappe.db.exists(dt, name):
 			frappe.get_doc(rec).insert(ignore_permissions=True, ignore_if_duplicate=True)
-	# Ensure a default company exists
+	# Ensure a default company exists — use in_import flag to skip link
+	# validation in Company.on_update hooks (warehouses, cost centers, etc.)
 	if not frappe.db.get_all("Company", limit=1):
-		frappe.get_doc(
-			{
-				"doctype": "Company",
-				"company_name": "_Test Company",
-				"abbr": "_TC",
-				"default_currency": "INR",
-				"country": "India",
-			}
-		).insert(ignore_permissions=True)
+		frappe.flags.in_import = True
+		try:
+			frappe.get_doc(
+				{
+					"doctype": "Company",
+					"company_name": "_Test Company",
+					"abbr": "_TC",
+					"default_currency": "INR",
+					"country": "India",
+				}
+			).insert(ignore_permissions=True)
+		finally:
+			frappe.flags.in_import = False
 	frappe.db.commit()  # nosemgrep
 
 
