@@ -1,9 +1,12 @@
+import json
+
 import frappe
 from frappe import _
 from frappe.utils import add_months, cint, flt, get_last_day, getdate
 
 ALLOWED_DOCTYPES = ("Purchase Order", "Purchase Invoice")
 PROTECTED_TYPES = ("Advance", "Delivery")
+VALID_PAYMENT_TYPES = ("Advance", "Delivery", "EMI")
 
 
 def _get_payment_type(row):
@@ -11,13 +14,46 @@ def _get_payment_type(row):
 	return getattr(row, "custom_payment_type", None) or None
 
 
+def _apply_row_tags(doc, row_tags):
+	"""Apply custom_payment_type tags to specific rows in the payment schedule.
+
+	row_tags maps row name → payment type. Unknown row names are ignored
+	(they may have been removed since the client built the dialog).
+	"""
+	if isinstance(row_tags, str):
+		row_tags = json.loads(row_tags) if row_tags else {}
+	if not row_tags:
+		return
+
+	for row in doc.payment_schedule:
+		if row.name not in row_tags:
+			continue
+		new_type = row_tags[row.name]
+		if new_type not in VALID_PAYMENT_TYPES:
+			frappe.throw(
+				_("Invalid payment type {0} for row {1}. Must be Advance, Delivery, or EMI.").format(
+					new_type, row.idx
+				)
+			)
+		row.custom_payment_type = new_type
+
+
 @frappe.whitelist()
 def recalculate_emi(
-	doctype: str, docname: str, num_emis: int, start_date: str, day_of_month: int, cascade_to_pi: int = 0
+	doctype: str,
+	docname: str,
+	num_emis: int,
+	start_date: str,
+	day_of_month: int,
+	cascade_to_pi: int = 0,
+	row_tags: "str | None" = None,
 ):
 	"""Recalculate EMI rows in the payment schedule of a Purchase Order or Purchase Invoice.
 
 	Preserves Advance/Delivery rows and replaces all other rows with N equal monthly EMIs.
+
+	row_tags (optional JSON string): map of payment-schedule row name → payment type.
+	Used to tag previously-untagged rows in the same atomic call.
 	"""
 	num_emis = cint(num_emis)
 	day_of_month = cint(day_of_month)
@@ -33,6 +69,9 @@ def recalculate_emi(
 
 	doc = frappe.get_doc(doctype, docname)
 	doc.check_permission("write")
+
+	if row_tags:
+		_apply_row_tags(doc, row_tags)
 
 	_validate_before_recalculation(doc)
 
