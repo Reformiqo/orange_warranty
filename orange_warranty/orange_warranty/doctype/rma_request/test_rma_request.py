@@ -44,6 +44,7 @@ def _ensure_erpnext_prerequisites():
 					"default_currency": "INR",
 					"country": "India",
 					"default_valuation_method": "FIFO",
+					"valuation_method": "FIFO",
 				}
 			).insert(ignore_permissions=True)
 		finally:
