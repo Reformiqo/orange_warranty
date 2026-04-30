@@ -16,14 +16,14 @@ function show_emi_dialog_po(frm) {
 		(r) =>
 			r.custom_payment_type !== "Advance" &&
 			r.custom_payment_type !== "Delivery" &&
-			flt(r.paid_amount) > 0,
+			flt(r.paid_amount) > 0
 	);
 	if (paid_row) {
 		frappe.msgprint(
 			__("Cannot recalculate: row {0} already has paid amount {1}.", [
 				paid_row.idx,
 				format_currency(paid_row.paid_amount, frm.doc.currency),
-			]),
+			])
 		);
 		return;
 	}
@@ -48,8 +48,8 @@ function show_emi_dialog_po(frm) {
 	if (outstanding <= 0 && untagged_rows.length === 0) {
 		frappe.msgprint(
 			__(
-				"No outstanding amount to split into EMIs. Advance + Delivery covers the full Grand Total.",
-			),
+				"No outstanding amount to split into EMIs. Advance + Delivery covers the full Grand Total."
+			)
 		);
 		return;
 	}
@@ -64,9 +64,9 @@ function show_emi_dialog_po(frm) {
 				<div class="mb-3">
 					<p><strong>${__("Grand Total")}:</strong> ${format_currency(grand_total, frm.doc.currency)}</p>
 					<p><strong>${__("Advance + Delivery")}:</strong> ${format_currency(
-						protected_amount,
-						frm.doc.currency,
-					)} (${flt(protected_portion, 2)}%)</p>
+				protected_amount,
+				frm.doc.currency
+			)} (${flt(protected_portion, 2)}%)</p>
 				</div>
 			`,
 		},
@@ -108,7 +108,7 @@ function show_emi_dialog_po(frm) {
 			fieldtype: "Check",
 			label: __("Also update linked Purchase Invoices"),
 			default: 0,
-		},
+		}
 	);
 
 	let d = new frappe.ui.Dialog({
@@ -134,11 +134,7 @@ function show_emi_dialog_po(frm) {
 			let emi_amount = flt(outstanding / values.num_emis, 2);
 			let msg = __(
 				"This will replace all EMI rows with {0} installments of approx. {1} starting {2}.",
-				[
-					values.num_emis,
-					format_currency(emi_amount, frm.doc.currency),
-					values.start_date,
-				],
+				[values.num_emis, format_currency(emi_amount, frm.doc.currency), values.start_date]
 			);
 			if (values.cascade_to_pi) {
 				msg += "<br><br>" + __("This will also update linked Purchase Invoices.");
@@ -167,7 +163,7 @@ function show_emi_dialog_po(frm) {
 							]),
 							indicator: "green",
 						},
-						5,
+						5
 					);
 					if (r.cascaded_invoices && r.cascaded_invoices.length) {
 						frappe.show_alert(
@@ -177,7 +173,7 @@ function show_emi_dialog_po(frm) {
 								]),
 								indicator: "blue",
 							},
-							5,
+							5
 						);
 					}
 					if (r.skipped_invoices && r.skipped_invoices.length) {
@@ -185,7 +181,7 @@ function show_emi_dialog_po(frm) {
 							__("Skipped {0} Purchase Invoice(s): {1}", [
 								r.skipped_invoices.length,
 								r.skipped_invoices.join(", "),
-							]),
+							])
 						);
 					}
 					if (
@@ -198,7 +194,7 @@ function show_emi_dialog_po(frm) {
 								message: __("No linked Purchase Invoices found to update."),
 								indicator: "orange",
 							},
-							5,
+							5
 						);
 					}
 					frm.reload_doc();
@@ -227,7 +223,7 @@ function build_tagging_html_po(frm, untagged_rows) {
 					<td class="text-right">${amt}</td>
 					<td>
 						<select class="form-control input-sm emi-row-tag" data-row-name="${frappe.utils.escape_html(
-							r.name,
+							r.name
 						)}">
 							<option value="EMI" selected>${__("EMI")}</option>
 							<option value="Advance">${__("Advance")}</option>
@@ -243,7 +239,7 @@ function build_tagging_html_po(frm, untagged_rows) {
 		<div class="mb-3" style="border:1px solid var(--border-color); padding:10px; border-radius:6px; background: var(--bg-light-gray);">
 			<p><strong>${__("Tag {0} untagged row(s)", [untagged_rows.length])}</strong></p>
 			<p class="text-muted small">${__(
-				"Rows tagged 'EMI' will be replaced. 'Advance' and 'Delivery' rows are preserved.",
+				"Rows tagged 'EMI' will be replaced. 'Advance' and 'Delivery' rows are preserved."
 			)}</p>
 			<table class="table table-condensed" style="margin-bottom: 8px;">
 				<thead>
@@ -257,7 +253,9 @@ function build_tagging_html_po(frm, untagged_rows) {
 				</thead>
 				<tbody>${rows_html}</tbody>
 			</table>
-			<button type="button" class="btn btn-default btn-xs emi-tag-all-emi">${__("Tag all as EMI")}</button>
+			<button type="button" class="btn btn-default btn-xs emi-tag-all-emi">${__(
+				"Tag all as EMI"
+			)}</button>
 		</div>
 	`;
 }
@@ -293,7 +291,7 @@ function validate_payment_schedule(frm) {
 
 	if (Math.abs(total_portion - 100) > 0.01) {
 		frappe.msgprint(
-			__("Payment Schedule portions sum to {0}%, expected 100%.", [flt(total_portion, 3)]),
+			__("Payment Schedule portions sum to {0}%, expected 100%.", [flt(total_portion, 3)])
 		);
 		frappe.validated = false;
 	}
@@ -303,7 +301,7 @@ function validate_payment_schedule(frm) {
 			__("Payment Schedule amounts sum to {0}, expected {1}.", [
 				format_currency(total_amount, frm.doc.currency),
 				format_currency(frm.doc.grand_total, frm.doc.currency),
-			]),
+			])
 		);
 		frappe.validated = false;
 	}
