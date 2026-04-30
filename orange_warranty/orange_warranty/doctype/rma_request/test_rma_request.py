@@ -16,6 +16,13 @@ PREREQUISITES = [
 		"customer_group_name": "All Customer Groups",
 		"is_group": 1,
 	},
+	{
+		"doctype": "Customer Group",
+		"customer_group_name": "Individual",
+		"parent_customer_group": "All Customer Groups",
+		"is_group": 0,
+	},
+	{"doctype": "Warehouse Type", "name": "Transit"},
 ]
 
 
@@ -28,6 +35,7 @@ def _ensure_erpnext_prerequisites():
 			or rec.get("uom_name")
 			or rec.get("territory_name")
 			or rec.get("customer_group_name")
+			or rec.get("name")
 		)
 		if not frappe.db.exists(dt, name):
 			frappe.get_doc(rec).insert(ignore_permissions=True, ignore_if_duplicate=True)
@@ -43,6 +51,8 @@ def _ensure_erpnext_prerequisites():
 					"abbr": "_TC",
 					"default_currency": "INR",
 					"country": "India",
+					"default_valuation_method": "FIFO",
+					"valuation_method": "FIFO",
 				}
 			).insert(ignore_permissions=True)
 		finally:
@@ -82,7 +92,7 @@ class TestRMARequest(UnitTestCase):
 				{
 					"doctype": "Customer",
 					"customer_name": "Test RMA Customer",
-					"customer_group": "All Customer Groups",
+					"customer_group": "Individual",
 					"territory": "All Territories",
 				}
 			).insert(ignore_permissions=True)
