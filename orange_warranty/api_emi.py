@@ -109,29 +109,17 @@ def _validate_before_recalculation(doc):
 			).format(len(untagged))
 		)
 
-	# Check for Payment Entry references on EMI rows that would be orphaned
-	emi_row_names = [
-		row.name for row in doc.payment_schedule if _get_payment_type(row) not in PROTECTED_TYPES
-	]
-	if emi_row_names:
-		pe_refs = frappe.get_all(
-			"Payment Entry Reference",
-			filters={
-				"reference_doctype": doc.doctype,
-				"reference_name": doc.name,
-				"payment_schedule_row": ["in", emi_row_names],
-				"docstatus": ["!=", 2],
-			},
-			fields=["parent"],
-			limit=5,
-		)
-		if pe_refs:
-			pe_names = ", ".join(set(r.parent for r in pe_refs))
+	# Block if any non-protected row already has a paid amount recorded.
+	# Frappe maintains paid_amount as Payment Entries get submitted, so this
+	# is the source of truth for whether an EMI row has been paid against.
+	for row in doc.payment_schedule:
+		if _get_payment_type(row) in PROTECTED_TYPES:
+			continue
+		if flt(row.paid_amount) > 0:
 			frappe.throw(
-				_(
-					"Cannot recalculate: Payment Entry references exist on EMI rows ({0}). "
-					"Cancel or unlink the Payment Entries first."
-				).format(pe_names)
+				_("Cannot recalculate: row {0} ({1}) already has paid amount {2}.").format(
+					row.idx, row.description or "", row.paid_amount
+				)
 			)
 
 
@@ -282,25 +270,6 @@ def _cascade_to_purchase_invoices(po_name, num_emis, start_date, day_of_month):
 		if has_paid_emi:
 			skipped.append("{0} (has paid EMI rows)".format(pi_name))
 			continue
-
-		# Check for Payment Entry references on EMI rows
-		emi_row_names = [
-			row.name for row in pi_doc.payment_schedule if _get_payment_type(row) not in PROTECTED_TYPES
-		]
-		if emi_row_names:
-			pe_refs = frappe.get_all(
-				"Payment Entry Reference",
-				filters={
-					"reference_doctype": "Purchase Invoice",
-					"reference_name": pi_name,
-					"payment_schedule_row": ["in", emi_row_names],
-					"docstatus": ["!=", 2],
-				},
-				limit=1,
-			)
-			if pe_refs:
-				skipped.append("{0} (has Payment Entry references)".format(pi_name))
-				continue
 
 		valid_docs.append(pi_doc)
 
